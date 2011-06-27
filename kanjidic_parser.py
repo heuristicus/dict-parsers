@@ -22,7 +22,7 @@ def read_dict(dict_file):
         # Get indices for separation points in the string. First index
         # is the first occurrence of a kana in the list, the following
         # indicate classes, if they exist. T1 is kana used for names,
-        # T2 for radical names.
+        # T2 for radical names
         indices = get_indices(space_split)
         classes = []
         # Reversing makes the logic easier(?)
@@ -42,17 +42,6 @@ def read_dict(dict_file):
         parsed.append([kanji, classes, meanings])
     
     print parsed
-        
-
-def get_indices(str_):
-    """Returns a tuple containing the positions in the string of:
-        - The first kana
-        - Any class markers (T1 for names, T2 for radicals)
-        - The first english definition
-    Arguments:
-    - `str_`: String containing the kanji definition.
-    """
-
 
 def get_indices(list_):
     """Same as the above method, buts scans the string split on spaces
