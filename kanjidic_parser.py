@@ -12,34 +12,39 @@ def read_dict(dict_file):
     parsed = []
     # Last index contains nothing, so ignore it.
     for line in line_split[1:-1]:
-        # Bits on each line are space separated, so split
-        # these. Problematic. Meanings with more than one word also
-        # get split - do not want that. e.g. {beautiful (as a jewel)}
-        # -> ['{beautiful', '(as', 'a', 'jewel)}']. Split on '{'
-        # instead, and then process the initial segment instead of the
-        # whole string? Saves having to find the index of the meanings
-        # as well, will be space_split[1:] if this split is done
-        # first.
-
-        space_split = line.split(' ')
-        #for c in line.decode('utf-8'):
-        #    print c
+        # Split on the {. Separates out the english meanings from the rest of the data
+        meaning_split =  line.split('{')
+        # First index of meaning_split contains everything but the
+        # meanings, space separated.
+        space_split = meaning_split[0].split(' ')
         #First index of the split list is the kanji.
         kanji = space_split[0]
+        # Get indices for separation points in the string. First index
+        # is the first occurrence of a kana in the list, the following
+        # indicate classes, if they exist. T1 is kana used for names,
+        # T2 for radical names.
         indices = get_indices(space_split)
         #print indices
-        readings = space_split[indices[0]:indices[1]]
+        # The part of the list which contains readings is different
+        # depending on whether there are classes present or not.
         classes = []
-        for i in range(len(indices[1:-1])):
-            prop_i = i+1
-            # Append elements contained in the kanji definition from
-            # the start of the current class to the start of the next
-            # class, ignoring the class definition (e.g. T1).
-            classes.append(space_split[indices[prop_i] + 1:indices[prop_i + 1]])
+        if len(indices) == 1:
+            readings = space_split[indices[0]:-1]
+            #print readings
+        else:
+            readings = space_split[indices[0]:indices[1]]
+            print indices
+            # Loop over all indices containing references to classes
+            for i in map(lambda x: x + 1, range(len(indices[1:]))):
+                print len(indices[1:])
+                sec_ind = -1 if len(indices[1:]) == 1 else indices[i + 1]
+                #print space_split[indices[i] + 1: sec_ind]
         # -1 to strip out the last index which is empty
-        meanings = space_split[indices[-1]:-1]
-        #print meanings
-        #print kanji
+        meanings = meaning_split[1:]
+        # Strip '} ' on the end of each meaning.
+        for i, string in enumerate(meanings):
+            meanings[i] = string[:-2]
+        #meanings = space_split[indices[-1]:-1]
         
 
 def get_indices(str_):
@@ -62,9 +67,7 @@ def get_indices(list_):
     
     kana_found = False
     ind_list = []
-    # really crude way of referencing index. Find a way to iterate over index and item in list.
-    ind = 1
-    # First index contains kanji, last index is blank enumerate the
+    # First index contains kanji, last index is blank. Enumerate the
     # list and then iterate over the items in it, with reference ind
     # referring to the item index.
     for ind, item in enumerate(list_[1:-1]):
@@ -76,17 +79,18 @@ def get_indices(list_):
                 kana_found = True
         # Find classes in the line - denoted by T1/T2. Only take into
         # account those items which are at the start of a line (^)
-        if re.search('^T[0-9]', item):
+        elif re.search('^T[0-9]', item):
             ind_list.append(ind + 1)
             #print 'special'
-            print item
-        if item[0] == '{':
+            #print item
+        elif item[0] == '{':
             ind_list.append(ind + 1)
             #print 'meaning'
             # found the last index we need, so stop the loop
             break
-        ind += 1
 
+    #for ind in ind_list:
+    #    print list_[ind]
     return ind_list
 
 def main():
