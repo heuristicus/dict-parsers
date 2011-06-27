@@ -24,27 +24,24 @@ def read_dict(dict_file):
         # indicate classes, if they exist. T1 is kana used for names,
         # T2 for radical names.
         indices = get_indices(space_split)
-        #print indices
-        # The part of the list which contains readings is different
-        # depending on whether there are classes present or not.
         classes = []
-        if len(indices) == 1:
-            readings = space_split[indices[0]:-1]
-            #print readings
-        else:
-            readings = space_split[indices[0]:indices[1]]
-            print indices
-            # Loop over all indices containing references to classes
-            for i in map(lambda x: x + 1, range(len(indices[1:]))):
-                print len(indices[1:])
-                sec_ind = -1 if len(indices[1:]) == 1 else indices[i + 1]
-                #print space_split[indices[i] + 1: sec_ind]
+        # Reversing makes the logic easier(?)
+        indices.reverse()
+        end = -1
+        for val in indices:
+            # Construct classes in reverse order
+            classes.append(space_split[val:end])
+            end = val
+        # Put things back in the right order (readings->classes)
+        classes.reverse()
         # -1 to strip out the last index which is empty
         meanings = meaning_split[1:]
         # Strip '} ' on the end of each meaning.
         for i, string in enumerate(meanings):
             meanings[i] = string[:-2]
-        #meanings = space_split[indices[-1]:-1]
+        parsed.append([kanji, classes, meanings])
+    
+    print parsed
         
 
 def get_indices(str_):
@@ -81,16 +78,7 @@ def get_indices(list_):
         # account those items which are at the start of a line (^)
         elif re.search('^T[0-9]', item):
             ind_list.append(ind + 1)
-            #print 'special'
-            #print item
-        elif item[0] == '{':
-            ind_list.append(ind + 1)
-            #print 'meaning'
-            # found the last index we need, so stop the loop
-            break
-
-    #for ind in ind_list:
-    #    print list_[ind]
+            
     return ind_list
 
 def main():
