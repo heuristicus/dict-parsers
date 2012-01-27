@@ -31,6 +31,8 @@ class Corpus:
 
         for item in matches:
             print item[0]
+        
+        print 'Found %d sentences containing "%s".'%(len(matches), word)
 
 if __name__ == '__main__':
     if not sys.argv:
