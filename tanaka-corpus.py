@@ -49,23 +49,21 @@ class Corpus:
     def create_entry(self):
         self.entry = gtk.Entry()
         self.entry.set_visibility(True)
-        self.entry.connect('key-press-event', self.do_search, 'entry')
+        #self.entry.connect('key-press-event', self.do_search, 'entry')
         
     def create_buttons(self):
         self.search_btn = gtk.Button('Search')
         self.search_btn.connect('clicked', self.do_search, 'search_btn')
                 
     def create_treeview(self):
-        self.liststore = gtk.ListStore(str)
-        for i in range(5):
-            self.liststore.append(["wotup"])
+        self.liststore = gtk.ListStore(str, str)
         self.treeview = gtk.TreeView(self.liststore)
         self.tcol = gtk.TreeViewColumn('Results')
         self.treeview.append_column(self.tcol)
         self.cell = gtk.CellRendererText()
-        #self.cell.set_property('cell-background', 'cyan')
         self.tcol.pack_start(self.cell, True)
         self.tcol.add_attribute(self.cell, 'text', 0)
+        self.treeview.set_tooltip_column(1)
         
     def search_loop(self):
         in_str = ''
@@ -76,17 +74,16 @@ class Corpus:
     def update_liststore(self, data):
         self.liststore.clear()
         for item in data:
-            #print item
-            self.liststore.append([item[0]])
+            sp = item[0].split('\t')
+            jp = sp[0]
+            en,id_ = sp[1].split('#ID=')
+            self.liststore.append([jp, en])
                     
     def do_search(self, widget, event, data=None):
-        if (data == 'entry' and  event.keyval == 65293) or data == 'search_btn':
-            search_string = self.entry.get_text()
-            results = self.search_pairs(search_string)
-            self.update_liststore(results)
-        else:
-            pass
-
+        search_string = self.entry.get_text()
+        results = self.search_pairs(search_string)
+        self.update_liststore(results)
+        
     def search_pairs(self, word):
         matches = []
         for i in range(len(self.pairs)):
