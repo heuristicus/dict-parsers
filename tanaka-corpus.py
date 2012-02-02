@@ -1,8 +1,12 @@
 #!/usr/bin/python
 
-import sys, re
+import sys, re, pygtk
+pygtk.require('2.0')
+import gtk
 
 class Corpus:
+    
+    
     
     def __init__(self, corpus_loc):
         f = open(corpus_loc)
@@ -13,13 +17,73 @@ class Corpus:
         
         self.pairs = zip(a,b)
 
-        self.search_loop()
+        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window.set_title('corpus_search')
+        self.window.set_position(gtk.WIN_POS_CENTER)
+        self.window.connect('destroy', gtk.main_quit)
+
+        self.make_gui_widgets()
+        
+        v1 = gtk.HBox()
+        v1.pack_start(self.search_btn)
+        v1.pack_start(self.entry)
+        
+        v2 = gtk.VBox()
+        v2.pack_start(self.treeview)
+        
+        v3 = gtk.VBox()
+        v3.pack_start(v2)
+        v3.pack_start(v1)
+
+        self.window.add(v3)
+
+        self.window.show_all()
+
+      
+    def make_gui_widgets(self):
+        self.create_entry()
+        self.create_buttons()
+        self.create_treeview()
+        
+    def create_entry(self):
+        self.entry = gtk.Entry()
+        self.entry.set_visibility(True)
+        
+    def create_buttons(self):
+        self.search_btn = gtk.Button('Search')
+        self.search_btn.connect('clicked', self.do_search, 'search_btn')
+                
+
+    def create_treeview(self):
+        self.liststore = gtk.ListStore(str)
+        for i in range(5):
+            self.liststore.append(["wotup"])
+        self.treeview = gtk.TreeView(self.liststore)
+        self.tcol = gtk.TreeViewColumn('Results')
+        self.treeview.append_column(self.tcol)
+        self.cell = gtk.CellRendererText()
+        #self.cell.set_property('cell-background', 'cyan')
+        self.tcol.pack_start(self.cell, True)
+        self.tcol.add_attribute(self.cell, 'text', 0)
+        
+        
 
     def search_loop(self):
         in_str = ''
         while (in_str != 'exit'):
             in_str = raw_input('Enter search term\n')
             results = self.search_pairs(in_str)
+
+    def update_liststore(self, data):
+        self.liststore.clear()
+        for item in data:
+            #print item
+            self.liststore.append([item[0]])
+                    
+    def do_search(self, widget, data=None):
+        search_string = self.entry.get_text()
+        results = self.search_pairs(search_string)
+        self.update_liststore(results)
 
     def search_pairs(self, word):
         matches = []
@@ -29,10 +93,13 @@ class Corpus:
             if found:
                 matches.append(self.pairs[i])
 
-        for item in matches:
-            print item[0]
-        
-        print 'Found %d sentences containing "%s".'%(len(matches), word)
+        return matches
+                
+        #print 'Found %d sentences containing "%s".'%(len(matches), word)
+
+
+def main():
+    gtk.main()
 
 if __name__ == '__main__':
     if not sys.argv:
@@ -40,3 +107,4 @@ if __name__ == '__main__':
         sys.exit(1)
     else:
         Corpus(sys.argv[1])
+        main()
