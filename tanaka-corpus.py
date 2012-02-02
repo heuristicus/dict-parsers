@@ -25,15 +25,19 @@ class Corpus:
         self.make_gui_widgets()
         
         v1 = gtk.HBox()
-        v1.pack_start(self.search_btn)
+        v1.pack_start(self.search_btn, False, False, 0)
         v1.pack_start(self.entry)
         
-        v2 = gtk.VBox()
-        v2.pack_start(self.treeview)
+
+        scr_win = gtk.ScrolledWindow()
+        scr_win.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        scr_win.add_with_viewport(self.treeview)
+        #v2 = gtk.VBox()
+        #v2.pack_start(self.treeview)
         
         v3 = gtk.VBox()
-        v3.pack_start(v2)
-        v3.pack_start(v1)
+        v3.pack_start(scr_win, True, True, 0)
+        v3.pack_end(v1, False, False,0)
 
         self.window.add(v3)
 
