@@ -8,14 +8,9 @@ class Corpus:
     
     
     
-    def __init__(self, corpus_loc):
-        f = open(corpus_loc)
-        s = f.read().split('\n')
-        f.close()
-        a = map(lambda i: s[i][2:], filter(lambda i: i%2 == 0, range(len(s)))) # get all A lines
-        b = map(lambda i: s[i][2:], filter(lambda i: i%2 != 0, range(len(s)))) # get all B lines
+    def __init__(self, corpus_loc=None):
         
-        self.pairs = zip(a,b)
+        self.read_corpus(corpus_loc)
 
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_title('corpus_search')
@@ -34,6 +29,7 @@ class Corpus:
         scr_win.add_with_viewport(self.treeview)
 
         v3 = gtk.VBox()
+        v3.pack_start(self.menubar, False, False, 0)
         v3.pack_start(scr_win, True, True, 0)
         v3.pack_start(v1, False, False,0)
         v3.pack_end(self.status, False, False, 0)
@@ -47,6 +43,7 @@ class Corpus:
         self.create_buttons()
         self.create_treeview()
         self.create_statusbar()
+        self.create_menubar()
         
     def create_entry(self):
         self.entry = gtk.Entry()
@@ -55,6 +52,46 @@ class Corpus:
         
     def create_statusbar(self):
         self.status = gtk.Statusbar()
+
+        
+    def create_menubar(self):
+        self.menubar = gtk.MenuBar()
+        filemenu = gtk.Menu()
+        file_ = gtk.MenuItem("File")
+        file_.set_submenu(filemenu)
+
+        open_ = gtk.MenuItem("Open")
+        open_.connect("activate", self.open_dialogue)
+        filemenu.append(open_)
+        
+        exit_ = gtk.MenuItem("Exit")
+        exit_.connect("activate", gtk.main_quit)
+        filemenu.append(exit_)
+
+        self.menubar.append(file_)
+
+    def open_dialogue(self, widget):
+        dia = gtk.FileChooserDialog(title='Corpus Location', action=gtk.FILE_CHOOSER_ACTION_OPEN, buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
+                
+        res = dia.run()
+
+        if res == gtk.RESPONSE_OK:
+            self.read_corpus(dia.get_filename())
+       
+        dia.destroy()
+
+    def read_corpus(self, floc):
+        if floc:
+            f = open(floc)
+            s = f.read().split('\n')
+            f.close()
+            a = map(lambda i: s[i][2:], filter(lambda i: i%2 == 0, range(len(s)))) # get all A lines
+            b = map(lambda i: s[i][2:], filter(lambda i: i%2 != 0, range(len(s)))) # get all B lines
+            
+            self.pairs = zip(a,b)
+            self.corpus_loc = floc
+        else:
+            self.corpus_loc = None
                 
     def create_buttons(self):
         self.search_btn = gtk.Button('Search')
@@ -76,6 +113,16 @@ class Corpus:
             in_str = raw_input('Enter search term\n')
             results = self.search_pairs(in_str)
 
+    def no_dict_dialog(self):
+        label = gtk.Label('Cannot find any data. You have probably not yet input the location of the Tanaka Corpus.')
+        label.set_line_wrap(True)
+        label.set_justify(gtk.JUSTIFY_CENTER)
+        label.show()
+        dialog = gtk.Dialog('Cannot find dictionary', self.window, gtk.DIALOG_MODAL, buttons=(gtk.STOCK_OK, gtk.RESPONSE_OK))
+        dialog.vbox.pack_start(label)
+        dialog.run()       
+        dialog.destroy()
+
     def update_liststore(self, data):
         self.liststore.clear()
         for item in data:
@@ -85,9 +132,12 @@ class Corpus:
             self.liststore.append([jp, en])
                     
     def do_search(self, widget, event, data=None):
-        search_string = self.entry.get_text()
-        results = self.search_pairs(search_string)
-        self.update_liststore(results)
+        if not self.corpus_loc:
+            self.no_dict_dialog()
+        else:
+            search_string = self.entry.get_text()
+            results = self.search_pairs(search_string)
+            self.update_liststore(results)
         
     def search_pairs(self, word):
         matches = []
@@ -106,9 +156,8 @@ def main():
     gtk.main()
 
 if __name__ == '__main__':
-    if not sys.argv:
-        print 'Provide location of corpus file.'
-        sys.exit(1)
+    if len(sys.argv) == 1:
+        Corpus()
     else:
         Corpus(sys.argv[1])
-        main()
+    main()
