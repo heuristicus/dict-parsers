@@ -20,6 +20,7 @@ class Corpus:
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_title('corpus_search')
         self.window.set_position(gtk.WIN_POS_CENTER)
+        self.window.set_size_request(500, 500)
         self.window.connect('destroy', gtk.main_quit)
 
         self.make_gui_widgets()
@@ -28,22 +29,18 @@ class Corpus:
         v1.pack_start(self.search_btn, False, False, 0)
         v1.pack_start(self.entry)
         
-
         scr_win = gtk.ScrolledWindow()
         scr_win.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         scr_win.add_with_viewport(self.treeview)
-        #v2 = gtk.VBox()
-        #v2.pack_start(self.treeview)
-        
+
         v3 = gtk.VBox()
         v3.pack_start(scr_win, True, True, 0)
         v3.pack_end(v1, False, False,0)
 
         self.window.add(v3)
-
+        self.window.set_focus(self.entry)
         self.window.show_all()
 
-      
     def make_gui_widgets(self):
         self.create_entry()
         self.create_buttons()
@@ -52,12 +49,12 @@ class Corpus:
     def create_entry(self):
         self.entry = gtk.Entry()
         self.entry.set_visibility(True)
+        self.entry.connect('key-press-event', self.do_search, 'entry')
         
     def create_buttons(self):
         self.search_btn = gtk.Button('Search')
         self.search_btn.connect('clicked', self.do_search, 'search_btn')
                 
-
     def create_treeview(self):
         self.liststore = gtk.ListStore(str)
         for i in range(5):
@@ -70,8 +67,6 @@ class Corpus:
         self.tcol.pack_start(self.cell, True)
         self.tcol.add_attribute(self.cell, 'text', 0)
         
-        
-
     def search_loop(self):
         in_str = ''
         while (in_str != 'exit'):
@@ -84,10 +79,13 @@ class Corpus:
             #print item
             self.liststore.append([item[0]])
                     
-    def do_search(self, widget, data=None):
-        search_string = self.entry.get_text()
-        results = self.search_pairs(search_string)
-        self.update_liststore(results)
+    def do_search(self, widget, event, data=None):
+        if (data == 'entry' and  event.keyval == 65293) or data == 'search_btn':
+            search_string = self.entry.get_text()
+            results = self.search_pairs(search_string)
+            self.update_liststore(results)
+        else:
+            pass
 
     def search_pairs(self, word):
         matches = []
