@@ -35,7 +35,8 @@ class Corpus:
 
         v3 = gtk.VBox()
         v3.pack_start(scr_win, True, True, 0)
-        v3.pack_end(v1, False, False,0)
+        v3.pack_start(v1, False, False,0)
+        v3.pack_end(self.status, False, False, 0)
 
         self.window.add(v3)
         self.window.set_focus(self.entry)
@@ -45,12 +46,16 @@ class Corpus:
         self.create_entry()
         self.create_buttons()
         self.create_treeview()
+        self.create_statusbar()
         
     def create_entry(self):
         self.entry = gtk.Entry()
         self.entry.set_visibility(True)
         #self.entry.connect('key-press-event', self.do_search, 'entry')
         
+    def create_statusbar(self):
+        self.status = gtk.Statusbar()
+                
     def create_buttons(self):
         self.search_btn = gtk.Button('Search')
         self.search_btn.connect('clicked', self.do_search, 'search_btn')
@@ -92,9 +97,9 @@ class Corpus:
             if found:
                 matches.append(self.pairs[i])
 
+        self.status.push(1, 'Found %d sentences containing "%s".'%(len(matches), word))
+
         return matches
-                
-        #print 'Found %d sentences containing "%s".'%(len(matches), word)
 
 
 def main():
