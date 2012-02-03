@@ -109,7 +109,7 @@ class Corpus:
         togcol = gtk.TreeViewColumn('Save', togCell, active=2)
 
         tcol.add_attribute(cell, 'text', 1)
-        tcol.add_attribute(togCell, 'active', 0)
+        #tcol.add_attribute(togCell, 'active', 0)
 
         self.treeview.append_column(togcol)
         self.treeview.append_column(tcol)
@@ -117,8 +117,10 @@ class Corpus:
         
         self.treeview.set_tooltip_column(1)
         
-    def toggled(self, cell, path, user_data):
-        print path, 'toggled'
+    def toggled(self, cell, path, model):
+        if path is not None:
+            it = model.get_iter(path)
+            model[it][2] = not model[it][2]
 
     def no_dict_dialog(self):
         label = gtk.Label('Cannot find any data. You have probably not yet input the location of the Tanaka Corpus.')
