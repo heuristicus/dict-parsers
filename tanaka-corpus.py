@@ -100,11 +100,13 @@ class Corpus:
     def create_treeview(self):
         self.liststore = gtk.ListStore(str, str)
         self.treeview = gtk.TreeView(self.liststore)
-        self.tcol = gtk.TreeViewColumn('Results')
-        self.treeview.append_column(self.tcol)
-        self.cell = gtk.CellRendererText()
-        self.tcol.pack_start(self.cell, True)
-        self.tcol.add_attribute(self.cell, 'text', 0)
+
+        cell = gtk.CellRendererText()
+        tcol = gtk.TreeViewColumn('Results', cell, markup=0)
+        self.treeview.append_column(tcol)
+        
+        #tcol.pack_start(cell, True)
+        tcol.add_attribute(cell, 'text', 0)
         self.treeview.set_tooltip_column(1)
         
     def search_loop(self):
@@ -123,13 +125,17 @@ class Corpus:
         dialog.run()       
         dialog.destroy()
 
-    def update_liststore(self, data):
+    def update_liststore(self, data, search_word):
         self.liststore.clear()
         for item in data:
             sp = item[0].split('\t')
             jp = sp[0]
             en,id_ = sp[1].split('#ID=')
-            self.liststore.append([jp, en])
+            self.liststore.append([self.apply_markup(jp, search_word), en])
+
+    def apply_markup(self, sentence, word):
+        self.highlight_colour = 'red'
+        return sentence.replace(word, '<span foreground="red">%s</span>'%(word))
                     
     def do_search(self, widget, event, data=None):
         if not self.corpus_loc:
@@ -137,7 +143,7 @@ class Corpus:
         else:
             search_string = self.entry.get_text()
             results = self.search_pairs(search_string)
-            self.update_liststore(results)
+            self.update_liststore(results, search_string)
         
     def search_pairs(self, word):
         matches = []
