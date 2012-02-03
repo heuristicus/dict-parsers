@@ -98,22 +98,27 @@ class Corpus:
         self.search_btn.connect('clicked', self.do_search, 'search_btn')
                 
     def create_treeview(self):
-        self.liststore = gtk.ListStore(str, str)
+        self.liststore = gtk.ListStore(str, str, bool)
         self.treeview = gtk.TreeView(self.liststore)
 
         cell = gtk.CellRendererText()
+        togCell = gtk.CellRendererToggle()
+        togCell.set_property('activatable', True)
+        togCell.connect('toggled', self.toggled, self.liststore)
         tcol = gtk.TreeViewColumn('Results', cell, markup=0)
+        togcol = gtk.TreeViewColumn('Save', togCell, active=2)
+
+        tcol.add_attribute(cell, 'text', 1)
+        tcol.add_attribute(togCell, 'active', 0)
+
+        self.treeview.append_column(togcol)
         self.treeview.append_column(tcol)
         
-        #tcol.pack_start(cell, True)
-        tcol.add_attribute(cell, 'text', 0)
+        
         self.treeview.set_tooltip_column(1)
         
-    def search_loop(self):
-        in_str = ''
-        while (in_str != 'exit'):
-            in_str = raw_input('Enter search term\n')
-            results = self.search_pairs(in_str)
+    def toggled(self, cell, path, user_data):
+        print path, 'toggled'
 
     def no_dict_dialog(self):
         label = gtk.Label('Cannot find any data. You have probably not yet input the location of the Tanaka Corpus.')
@@ -131,7 +136,7 @@ class Corpus:
             sp = item[0].split('\t')
             jp = sp[0]
             en,id_ = sp[1].split('#ID=')
-            self.liststore.append([self.apply_markup(jp, search_word), en])
+            self.liststore.append([self.apply_markup(jp, search_word), en, False])
 
     def apply_markup(self, sentence, word):
         self.highlight_colour = 'red'
@@ -142,8 +147,8 @@ class Corpus:
             self.no_dict_dialog()
         else:
             search_string = self.entry.get_text()
-            results = self.search_pairs(search_string)
-            self.update_liststore(results, search_string)
+            self.results = self.search_pairs(search_string)
+            self.update_liststore(self.results, search_string)
         
     def search_pairs(self, word):
         matches = []
