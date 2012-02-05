@@ -26,7 +26,7 @@ class Corpus:
             return self.search_pairs(search_item)
         
     def search_pairs(self, word):
-        matches = []
+        matches = [word]
         for i in range(len(self.pairs)):
             found = re.search(word, self.pairs[i][1])
             
