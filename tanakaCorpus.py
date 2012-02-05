@@ -23,9 +23,7 @@ class Corpus:
         if not self.corpus_loc:
             return -1
         else:
-            self.results = self.search_pairs(search_item)
-            return self.results
-            #self.update_liststore(self.results, search_string)
+            return self.search_pairs(search_item)
         
     def search_pairs(self, word):
         matches = []
