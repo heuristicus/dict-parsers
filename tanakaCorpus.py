@@ -1,13 +1,10 @@
 #!/usr/bin/python
-
-import sys, re, pygtk
-pygtk.require('2.0')
-import gtk
+import re
 
 class Corpus:
         
     def __init__(self, corpus_loc=None):
-        print 'no'    
+        self.read_corpus(corpus_loc)
 
     def read_corpus(self, floc):
         if floc:
@@ -21,15 +18,14 @@ class Corpus:
             self.corpus_loc = floc
         else:
             self.corpus_loc = None
-                
-    
-    def do_search(self, widget, event, data=None):
+                    
+    def do_search(self, search_item):
         if not self.corpus_loc:
-            self.no_dict_dialog()
+            return -1
         else:
-            search_string = self.entry.get_text()
             self.results = self.search_pairs(search_string)
-            self.update_liststore(self.results, search_string)
+            return self.results
+            #self.update_liststore(self.results, search_string)
         
     def search_pairs(self, word):
         matches = []
@@ -38,7 +34,5 @@ class Corpus:
             
             if found:
                 matches.append(self.pairs[i])
-
-        self.status.push(1, 'Found %d sentences containing "%s".'%(len(matches), word))
 
         return matches
