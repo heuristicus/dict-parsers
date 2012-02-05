@@ -23,7 +23,7 @@ class Corpus:
         if not self.corpus_loc:
             return -1
         else:
-            self.results = self.search_pairs(search_string)
+            self.results = self.search_pairs(search_item)
             return self.results
             #self.update_liststore(self.results, search_string)
         
